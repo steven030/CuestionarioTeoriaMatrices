@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro Interactivo de Álgebra Lineal - Propiedades de Matrices</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            700: '#0e7490',
+                            900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- KaTeX CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .katex-display { margin: 0.5em 0; }
+        .tab-active { border-bottom: 3px solid #06b6d4; color: #06b6d4; font-weight: 600; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased bg-slate-900 text-slate-100 selection:bg-cyan-500 selection:text-white">
+
+    <!-- App Header -->
+    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-gradient-to-tr from-cyan-600 to-blue-600 rounded-xl shadow-lg">
+                        <i class="fa-solid fa-square-root-variable text-xl text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight text-slate-100">Álgebra Lineal Interactiva</h1>
+                        <p class="text-xs text-cyan-400 font-medium">Propiedades de Matrices & RREF Engine</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex space-x-8 text-sm font-medium">
+                    <button onclick="switchTab('flashcards')" id="nav-flashcards" class="tab-btn tab-active py-5 px-1 inline-flex items-center gap-2 transition-colors">
+                        <i class="fa-solid fa-cards-blank"></i> Compendio & Flashcards
+                    </button>
+                    <button onclick="switchTab('rref')" id="nav-rref" class="tab-btn py-5 px-1 inline-flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors">
+                        <i class="fa-solid fa-table-cells"></i> Verificador RREF
+                    </button>
+                    <button onclick="switchTab('quiz')" id="nav-quiz" class="tab-btn py-5 px-1 inline-flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors">
+                        <i class="fa-solid fa-graduation-cap"></i> Cuestionario Interactivo
+                    </button>
+                </nav>
+
+                <div class="flex items-center space-x-3">
+                    <span id="streak-badge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                        <i class="fa-solid fa-fire text-amber-500"></i> Racha: <span id="streak-count">0</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Bar -->
+        <div class="md:hidden border-t border-slate-700/50 flex justify-around text-xs font-medium py-2 bg-slate-800">
+            <button onclick="switchTab('flashcards')" id="nav-mobile-flashcards" class="flex flex-col items-center gap-1 text-cyan-400">
+                <i class="fa-solid fa-cards-blank text-base"></i> Compendio
+            </button>
+            <button onclick="switchTab('rref')" id="nav-mobile-rref" class="flex flex-col items-center gap-1 text-slate-400">
+                <i class="fa-solid fa-table-cells text-base"></i> RREF
+            </button>
+            <button onclick="switchTab('quiz')" id="nav-mobile-quiz" class="flex flex-col items-center gap-1 text-slate-400">
+                <i class="fa-solid fa-graduation-cap text-base"></i> Cuestionario
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- ================= SECTION 1: COMPENDIO & FLASHCARDS ================= -->
+        <section id="section-flashcards" class="space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-book-bookmark text-cyan-400"></i> Compendio Teórico de Propiedades
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">Explora las reglas fundamentales del álgebra matricial ordenadas por categoría.</p>
+                </div>
+                <!-- Filter buttons -->
+                <div class="flex flex-wrap gap-2" id="category-filters">
+                    <button onclick="filterCategory('all')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-600 text-white shadow">Todas</button>
+                    <button onclick="filterCategory('basic')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600">Básicas</button>
+                    <button onclick="filterCategory('mult')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600">Producto</button>
+                    <button onclick="filterCategory('trans')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600">Traspuesta</button>
+                    <button onclick="filterCategory('inv')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600">Inversa</button>
+                    <button onclick="filterCategory('det')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600">Determinantes</button>
+                    <button onclick="filterCategory('trace')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600">Traza</button>
+                </div>
+            </div>
+
+            <!-- Flashcard Grid -->
+            <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic cards populated via JavaScript -->
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: VERIFICADOR RREF ================= -->
+        <section id="section-rref" class="hidden space-y-6">
+            <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50">
+                <h2 class="text-2xl font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-cyan-400"></i> Verificador de Formas Escalonadas (REF y RREF)
+                </h2>
+                <p class="text-sm text-slate-400 mt-1">Ingresa los valores numéricos de una matriz para analizar si está en Forma Escalonada por Filas (REF) o Forma Escalonada Reducida por Filas (RREF).</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Controls and Matrix Grid -->
+                <div class="lg:col-span-6 bg-slate-800 rounded-2xl p-6 border border-slate-700 space-y-6">
+                    <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-700">
+                        <label class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-up-right-and-down-left-from-center text-cyan-400"></i> Tamaño de Matriz:
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <select id="matrix-rows" onchange="createMatrixGrid()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                                <option value="2">2 filas</option>
+                                <option value="3" selected>3 filas</option>
+                                <option value="4">4 filas</option>
+                            </select>
+                            <span class="text-slate-500">×</span>
+                            <select id="matrix-cols" onchange="createMatrixGrid()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                                <option value="2">2 columnas</option>
+                                <option value="3">3 columnas</option>
+                                <option value="4" selected>4 columnas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Preset Examples -->
+                    <div class="flex flex-wrap gap-2">
+                        <span class="text-xs text-slate-400 self-center">Ejemplos rápidos:</span>
+                        <button onclick="loadRrefPreset('rref')" class="px-2.5 py-1 text-xs rounded bg-slate-700 hover:bg-cyan-600 text-slate-200 transition-colors">Ejemplo RREF</button>
+                        <button onclick="loadRrefPreset('ref')" class="px-2.5 py-1 text-xs rounded bg-slate-700 hover:bg-cyan-600 text-slate-200 transition-colors">Ejemplo REF no RREF</button>
+                        <button onclick="loadRrefPreset('neither')" class="px-2.5 py-1 text-xs rounded bg-slate-700 hover:bg-cyan-600 text-slate-200 transition-colors">Ejemplo No Escalonada</button>
+                        <button onclick="loadRrefPreset('zeros')" class="px-2.5 py-1 text-xs rounded bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors">Limpiar</button>
+                    </div>
+
+                    <!-- Interactive Inputs Grid -->
+                    <div class="flex justify-center my-4 overflow-x-auto p-4 bg-slate-900/60 rounded-xl border border-slate-800">
+                        <div class="relative flex items-center">
+                            <!-- Left Bracket -->
+                            <div class="w-3 border-l-2 border-t-2 border-b-2 border-slate-400 rounded-l-md self-stretch"></div>
+                            
+                            <div id="matrix-inputs-container" class="grid gap-2 p-3">
+                                <!-- Generated by JavaScript -->
+                            </div>
+
+                            <!-- Right Bracket -->
+                            <div class="w-3 border-r-2 border-t-2 border-b-2 border-slate-400 rounded-r-md self-stretch"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Panel -->
+                <div class="lg:col-span-6 bg-slate-800 rounded-2xl p-6 border border-slate-700 space-y-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-700">
+                            <h3 class="font-bold text-slate-200 text-lg">Diagnóstico Formal</h3>
+                            <div id="rref-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-700 text-slate-300">
+                                Evaluando...
+                            </div>
+                        </div>
+
+                        <!-- 4 Rules Verification List -->
+                        <div class="mt-4 space-y-3" id="rref-rules-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-700/60 text-xs text-slate-400 space-y-2">
+                        <div class="font-semibold text-slate-300 text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-lightbulb text-amber-400"></i> Recordatorio de Reglas:
+                        </div>
+                        <p>• <strong>REF:</strong> Filas cero al final, pivotes a la derecha en filas inferiores, entradas bajo cada pivote son 0.</p>
+                        <p>• <strong>RREF:</strong> Cumple REF + Todos los pivotes son $1$ + Cada pivote es el único elemento distinto de cero en su columna.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 3: CUESTIONARIO ================= -->
+        <section id="section-quiz" class="hidden space-y-6 max-w-4xl mx-auto">
+            <!-- Quiz Header / Scoreboard -->
+            <div class="bg-slate-800/80 p-6 rounded-2xl border border-slate-700 flex flex-wrap items-center justify-between gap-4 shadow-lg">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-brain text-cyan-400"></i> Desafío Teórico de Álgebra Lineal
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-0.5">Demuestra tu conocimiento resolviendo preguntas sobre propiedades complejas.</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-center px-4 py-2 bg-slate-900 rounded-xl border border-slate-700">
+                        <span class="block text-xs text-slate-400 uppercase font-semibold">Puntuación</span>
+                        <span id="quiz-score" class="text-xl font-extrabold text-cyan-400">0 / 0</span>
+                    </div>
+                    <button onclick="resetQuiz()" class="p-3 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition-colors" title="Reiniciar cuestionario">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="quiz-card" class="bg-slate-800 rounded-2xl p-6 sm:p-8 border border-slate-700 space-y-6 shadow-xl relative overflow-hidden">
+                <div class="flex items-center justify-between text-xs font-semibold text-slate-400">
+                    <span id="question-category" class="uppercase tracking-wider px-2.5 py-1 rounded bg-slate-700 text-cyan-300">Determinantes</span>
+                    <span id="question-number">Pregunta 1 de 10</span>
+                </div>
+
+                <!-- Question Text -->
+                <div id="question-text" class="text-lg sm:text-xl font-medium text-slate-100 min-h-[60px]">
+                    <!-- Dynamically rendered -->
+                </div>
+
+                <!-- Options Grid -->
+                <div id="options-container" class="grid grid-cols-1 gap-3">
+                    <!-- Dynamic option buttons -->
+                </div>
+
+                <!-- Feedback Section -->
+                <div id="quiz-feedback" class="hidden p-5 rounded-xl border space-y-2">
+                    <div id="feedback-title" class="font-bold flex items-center gap-2 text-base"></div>
+                    <div id="feedback-explanation" class="text-sm leading-relaxed text-slate-200"></div>
+                </div>
+
+                <!-- Next Question Button -->
+                <div class="flex justify-end pt-2">
+                    <button id="next-question-btn" onclick="nextQuestion()" class="hidden px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg transition-all items-center gap-2">
+                        Siguiente Pregunta <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        /* ================= DATA & STATE MANAGEMENT ================= */
+        
+        // Flashcards / Compendio Data
+        const PROPERTIES_DATA = [
+            {
+                id: 1,
+                category: 'mult',
+                categoryLabel: 'Multiplicación de Matrices',
+                title: 'No Conmutatividad Fundamental',
+                formula: 'A B \\neq B A \\quad \\text{(en general)}',
+                description: 'A diferencia de los números reales, el orden de los factores en la multiplicación matricial altera el resultado o puede incluso no estar definido.',
+                color: 'border-rose-500/40 bg-rose-950/10'
+            },
+            {
+                id: 2,
+                category: 'det',
+                categoryLabel: 'Determinantes',
+                title: 'Determinante del Producto Escalar',
+                formula: '\\det(c A) = c^n \\det(A)',
+                description: 'Si $A$ es una matriz de orden $n \\times n$ y $c$ es un escalar, el escalar $c$ se factoriza de CADA una de las $n$ filas, produciendo $c^n$.',
+                color: 'border-cyan-500/40 bg-cyan-950/10'
+            },
+            {
+                id: 3,
+                category: 'inv',
+                categoryLabel: 'Matriz Inversa',
+                title: 'Inversa del Producto',
+                formula: '(A B)^{-1} = B^{-1} A^{-1}',
+                description: 'La inversa del producto revierte el orden de los factores. Aplica solo para matrices invertibles del mismo tamaño.',
+                color: 'border-amber-500/40 bg-amber-950/10'
+            },
+            {
+                id: 4,
+                category: 'trans',
+                categoryLabel: 'Matriz Traspuesta',
+                title: 'Traspuesta del Producto',
+                formula: '(A B)^T = B^T A^T',
+                description: 'Al trasponer un producto, el orden de las matrices se invierte de forma análoga a la regla de las inversas.',
+                color: 'border-purple-500/40 bg-purple-950/10'
+            },
+            {
+                id: 5,
+                category: 'det',
+                categoryLabel: 'Determinantes',
+                title: 'Determinante del Producto',
+                formula: '\\det(A B) = \\det(A) \\cdot \\det(B)',
+                description: 'El determinante del producto es igual al producto de los determinantes de las matrices involucradas.',
+                color: 'border-cyan-500/40 bg-cyan-950/10'
+            },
+            {
+                id: 6,
+                category: 'det',
+                categoryLabel: 'Determinantes',
+                title: 'Determinante de la Inversa',
+                formula: '\\det(A^{-1}) = \\frac{1}{\\det(A)} = (\\det A)^{-1}',
+                description: 'Si $A$ es invertible, su determinante es no nulo y el determinante de su inversa es el recíproco del determinante de $A$.',
+                color: 'border-cyan-500/40 bg-cyan-950/10'
+            },
+            {
+                id: 7,
+                category: 'inv',
+                categoryLabel: 'Matriz Inversa',
+                title: 'Inversa de Potencia (Error Común)',
+                formula: '(A^k)^{-1} = (A^{-1})^k \\quad \\text{¡Atención: } (A^k)^{-1} \\neq (A^{-1})^{-k}!',
+                description: 'Elevar a la potencia $k$ y luego invertir es exactamente equivalente a invertir y elevar a la potencia $k$. No confundir los signos en exponentes.',
+                color: 'border-amber-500/40 bg-amber-950/10'
+            },
+            {
+                id: 8,
+                category: 'inv',
+                categoryLabel: 'Matriz Inversa',
+                title: 'Inversa del Producto por Escalar',
+                formula: '(c A)^{-1} = \\frac{1}{c} A^{-1} \\quad \\text{con } c \\neq 0',
+                description: 'Para multiplicar por un escalar no nulo $c$, la inversa requiere tomar el recíproco escalar $1/c$.',
+                color: 'border-amber-500/40 bg-amber-950/10'
+            },
+            {
+                id: 9,
+                category: 'trace',
+                categoryLabel: 'Traza de una Matriz',
+                title: 'Definición de Traza',
+                formula: '\\operatorname{tr}(A) = \\sum_{i=1}^n a_{ii}',
+                description: 'La traza de una matriz cuadrada $A$ es la SUMA (no el producto) de los elementos de su diagonal principal.',
+                color: 'border-emerald-500/40 bg-emerald-950/10'
+            },
+            {
+                id: 10,
+                category: 'trace',
+                categoryLabel: 'Traza de una Matriz',
+                title: 'Propiedad Cíclica de la Traza',
+                formula: '\\operatorname{tr}(A B) = \\operatorname{tr}(B A)',
+                description: 'A pesar de que $AB \\neq BA$ en general, las trazas de $AB$ y $BA$ siempre coinciden (asumiendo dimensiones compatibles).',
+                color: 'border-emerald-500/40 bg-emerald-950/10'
+            },
+            {
+                id: 11,
+                category: 'basic',
+                categoryLabel: 'Operaciones Básicas',
+                title: 'Distributividad del Producto',
+                formula: 'A(B + C) = AB + AC \\quad \\text{y} \\quad (B + C)A = BA + CA',
+                description: 'La multiplicación es distributiva respecto a la suma, conservando estrictamente el orden de los factores a izquierda o derecha.',
+                color: 'border-slate-500/40 bg-slate-800/40'
+            },
+            {
+                id: 12,
+                category: 'trans',
+                categoryLabel: 'Matriz Traspuesta',
+                title: 'Involución de Traspuesta',
+                formula: '(A^T)^T = A',
+                description: 'Trasponer una matriz dos veces consecutivas devuelve la matriz original intacta.',
+                color: 'border-purple-500/40 bg-purple-950/10'
+            }
+        ];
+
+        // Quiz Questions Bank
+        const QUIZ_QUESTIONS = [
+            {
+                id: 1,
+                category: 'Determinantes',
+                question: 'Si $A$ es una matriz cuadrada de orden $n = 3 \\times 3$ con $\\det(A) = 4$, ¿cuál es el determinante de $3A$?',
+                options: [
+                    '\\det(3A) = 12',
+                    '\\det(3A) = 36',
+                    '\\det(3A) = 108',
+                    '\\det(3A) = 64'
+                ],
+                correctIndex: 2,
+                explanation: 'Utilizamos la propiedad $\\det(cA) = c^n \\det(A)$. Con $c = 3$ y $n = 3$, tenemos $\\det(3A) = 3^3 \\cdot \\det(A) = 27 \\cdot 4 = 108$.'
+            },
+            {
+                id: 2,
+                category: 'Matriz Inversa',
+                question: '¿Cuál de las siguientes expresiones representa la inversa del producto de matrices invertibles $(2AB)^{-1}$?',
+                options: [
+                    '2 A^{-1} B^{-1}',
+                    '\\frac{1}{2} A^{-1} B^{-1}',
+                    '\\frac{1}{2} B^{-1} A^{-1}',
+                    '2 B^{-1} A^{-1}'
+                ],
+                correctIndex: 2,
+                explanation: 'Aplicando la propiedad de la inversa del producto $(XY)^{-1} = Y^{-1} X^{-1}$ y la regla del escalar $(cA)^{-1} = \\frac{1}{c} A^{-1}$, obtenemos $(2AB)^{-1} = \\frac{1}{2} B^{-1} A^{-1}$.'
+            },
+            {
+                id: 3,
+                category: 'Matriz Traspuesta',
+                question: '¿Verdadero o Falso? Para cualesquiera dos matrices cuadradas $A$ y $B$, se cumple siempre que $(AB)^T = A^T B^T$.',
+                options: [
+                    'Verdadero: La traspuesta se distribuye directamente.',
+                    'Falso: La propiedad correcta revierte el orden: $(AB)^T = B^T A^T$.'
+                ],
+                correctIndex: 1,
+                explanation: 'La propiedad correcta de la traspuesta del producto es $(AB)^T = B^T A^T$. Dado que el producto de matrices no es conmutativo, cambiar el orden es fundamental.'
+            },
+            {
+                id: 4,
+                category: 'Traza',
+                question: 'Sea $A$ una matriz $2 \\times 2$ con valores diagonales $a_{11} = 5$ y $a_{22} = -3$. ¿Cuál es la traza de $A$?',
+                options: [
+                    '\\operatorname{tr}(A) = -15',
+                    '\\operatorname{tr}(A) = 2',
+                    '\\operatorname{tr}(A) = 8',
+                    '\\operatorname{tr}(A) = -2'
+                ],
+                correctIndex: 1,
+                explanation: 'La traza de una matriz es la suma de sus elementos en la diagonal principal: $\\operatorname{tr}(A) = a_{11} + a_{22} = 5 + (-3) = 2$. Recordar que NO es el producto.'
+            },
+            {
+                id: 5,
+                category: 'Determinantes',
+                question: 'Si $\\det(A) = -2$ y $\\det(B) = 5$, ¿cuál es el determinante de $A^T B^{-1}$?',
+                options: [
+                    '\\det(A^T B^{-1}) = -10',
+                    '\\det(A^T B^{-1}) = -\\frac{2}{5}',
+                    '\\det(A^T B^{-1}) = -\\frac{5}{2}',
+                    '\\det(A^T B^{-1}) = \\frac{2}{5}'
+                ],
+                correctIndex: 1,
+                explanation: 'Usamos $\\det(A^T) = \\det(A) = -2$ y $\\det(B^{-1}) = \\frac{1}{\\det(B)} = \\frac{1}{5}$. Por la propiedad multiplicativa: $\\det(A^T B^{-1}) = \\det(A^T)\\det(B^{-1}) = -2 \\cdot \\frac{1}{5} = -\\frac{2}{5}$.'
+            },
+            {
+                id: 6,
+                category: 'Inversa y Potencias',
+                question: '¿Cuál de las siguientes afirmaciones sobre $(A^3)^{-1}$ es CORRECTA?',
+                options: [
+                    '(A^3)^{-1} = (A^{-1})^{-3}',
+                    '(A^3)^{-1} = (A^{-1})^3',
+                    '(A^3)^{-1} = -3A',
+                    '(A^3)^{-1} = 3 A^{-1}'
+                ],
+                correctIndex: 1,
+                explanation: 'Se cumple la propiedad $(A^k)^{-1} = (A^{-1})^k$. Un error muy común es cambiar el signo del exponente interior a negativo, pero $(A^3)^{-1} \\neq (A^{-1})^{-3}$.'
+            }
+        ];
+
+        /* ================= APP STATE ================= */
+        let currentStreak = 0;
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        let selectedOption = null;
+        let currentMatrixSize = { rows: 3, cols: 4 };
+
+        // Auto KaTeX Render Function
+        function renderMath() {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderFlashcards(PROPERTIES_DATA);
+            createMatrixGrid();
+            loadRrefPreset('rref');
+            initQuiz();
+            
+            // Initial MathJax/KaTeX Render
+            setTimeout(renderMath, 100);
+        });
+
+        // Tab Navigation
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.getElementById('section-flashcards').classList.add('hidden');
+            document.getElementById('section-rref').classList.add('hidden');
+            document.getElementById('section-quiz').classList.add('hidden');
+
+            // Reset navigation styles
+            const tabs = ['flashcards', 'rref', 'quiz'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                const mobileBtn = document.getElementById(`nav-mobile-${t}`);
+                if (btn) {
+                    btn.className = 'tab-btn py-5 px-1 inline-flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors';
+                }
+                if (mobileBtn) {
+                    mobileBtn.className = 'flex flex-col items-center gap-1 text-slate-400';
+                }
+            });
+
+            // Activate selected tab
+            document.getElementById(`section-${tabId}`).classList.remove('hidden');
+            
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            const activeMobileBtn = document.getElementById(`nav-mobile-${tabId}`);
+            if (activeBtn) activeBtn.className = 'tab-btn tab-active py-5 px-1 inline-flex items-center gap-2 transition-colors';
+            if (activeMobileBtn) activeMobileBtn.className = 'flex flex-col items-center gap-1 text-cyan-400 font-semibold';
+
+            // Trigger math render on tab change
+            setTimeout(renderMath, 50);
+        }
+
+        /* ================= SECTION 1: FLASHCARDS ================= */
+        function renderFlashcards(cards) {
+            const container = document.getElementById('cards-grid');
+            container.innerHTML = '';
+
+            cards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = `p-5 rounded-2xl border ${card.color} backdrop-blur flex flex-col justify-between shadow-lg transition-all duration-200 hover:scale-[1.02]`;
+                cardEl.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs uppercase font-bold tracking-wider text-slate-400 bg-slate-900/60 px-2.5 py-1 rounded-md border border-slate-700/50">${card.categoryLabel}</span>
+                            <i class="fa-solid fa-bookmark text-slate-600"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-100 text-lg mb-2">${card.title}</h3>
+                        <div class="my-3 p-3 bg-slate-900/80 rounded-xl border border-slate-700/80 text-center font-mono text-cyan-300 text-lg shadow-inner overflow-x-auto">
+                            $${card.formula}$
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">${card.description}</p>
+                    </div>
+                `;
+                container.appendChild(cardEl);
+            });
+
+            renderMath();
+        }
+
+        function filterCategory(cat) {
+            // Highlight filter buttons
+            const buttons = document.querySelectorAll('.cat-filter-btn');
+            buttons.forEach(btn => {
+                btn.className = 'cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600';
+            });
+            event.target.className = 'cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-600 text-white shadow';
+
+            if (cat === 'all') {
+                renderFlashcards(PROPERTIES_DATA);
+            } else {
+                const filtered = PROPERTIES_DATA.filter(item => item.category === cat);
+                renderFlashcards(filtered);
+            }
+        }
+
+        /* ================= SECTION 2: RREF ENGINE ================= */
+        function createMatrixGrid() {
+            const rows = parseInt(document.getElementById('matrix-rows').value);
+            const cols = parseInt(document.getElementById('matrix-cols').value);
+            currentMatrixSize = { rows, cols };
+
+            const container = document.getElementById('matrix-inputs-container');
+            container.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+            container.innerHTML = '';
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.step = 'any';
+                    input.value = '0';
+                    input.id = `m_${r}_${c}`;
+                    input.className = 'w-12 h-10 sm:w-14 sm:h-12 bg-slate-950 border border-slate-700 rounded-lg text-center text-slate-100 font-mono font-bold text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 focus:outline-none transition-all';
+                    input.oninput = analyzeMatrixRref;
+                    container.appendChild(input);
+                }
+            }
+
+            analyzeMatrixRref();
+        }
+
+        function getMatrixFromInputs() {
+            const { rows, cols } = currentMatrixSize;
+            const matrix = [];
+            for (let r = 0; r < rows; r++) {
+                const row = [];
+                for (let c = 0; c < cols; c++) {
+                    const val = parseFloat(document.getElementById(`m_${r}_${c}`).value) || 0;
+                    row.push(val);
+                }
+                matrix.push(row);
+            }
+            return matrix;
+        }
+
+        function loadRrefPreset(type) {
+            const presets = {
+                'rref': [
+                    [1, 0, 0, 3],
+                    [0, 1, 0, -2],
+                    [0, 0, 1, 5]
+                ],
+                'ref': [
+                    [2, 1, -1, 4],
+                    [0, 1, 3, 2],
+                    [0, 0, 5, 10]
+                ],
+                'neither': [
+                    [0, 1, 2, 3],
+                    [1, 0, 4, 1],
+                    [0, 0, 0, 0]
+                ],
+                'zeros': [
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0]
+                ]
+            };
+
+            const preset = presets[type];
+            if (!preset) return;
+
+            document.getElementById('matrix-rows').value = 3;
+            document.getElementById('matrix-cols').value = 4;
+            currentMatrixSize = { rows: 3, cols: 4 };
+
+            const container = document.getElementById('matrix-inputs-container');
+            container.style.gridTemplateColumns = `repeat(4, minmax(0, 1fr))`;
+            container.innerHTML = '';
+
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 4; c++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.step = 'any';
+                    input.value = preset[r][c];
+                    input.id = `m_${r}_${c}`;
+                    input.className = 'w-12 h-10 sm:w-14 sm:h-12 bg-slate-950 border border-slate-700 rounded-lg text-center text-slate-100 font-mono font-bold text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 focus:outline-none transition-all';
+                    input.oninput = analyzeMatrixRref;
+                    container.appendChild(input);
+                }
+            }
+
+            analyzeMatrixRref();
+        }
+
+        function analyzeMatrixRref() {
+            const matrix = getMatrixFromInputs();
+            const R = matrix.length;
+            const C = matrix[0].length;
+
+            // Rules Verification Engine
+            const ruleStatus = [
+                { id: 1, title: 'Regla 1: Filas Nulas', desc: 'Todas las filas compuestas enteramente de ceros deben estar al final de la matriz.', status: true, msg: 'Cumplido: Las filas nulas están abajo.' },
+                { id: 2, title: 'Regla 2: Posición de Pivotes', desc: 'El primer elemento distinto de cero (pivote) de una fila debe estar a la derecha del pivote de la fila anterior.', status: true, msg: 'Cumplido: Los pivotes avanzan estrictamente a la derecha.' },
+                { id: 3, title: 'Regla 3: Pivotes igual a 1', desc: 'El primer elemento distinto de cero en cada fila no nula es exactamente igual a 1.', status: true, msg: 'Cumplido: Todos los pivotes principales son 1.' },
+                { id: 4, title: 'Regla 4: Ceros en Columna del Pivote', desc: 'Cada columna que contiene un pivote tiene ceros en todas sus demás entradas (arriba y abajo).', status: true, msg: 'Cumplido: Entradas arriba y abajo del pivote son cero.' }
+            ];
+
+            // 1. Check Zero Rows at Bottom
+            let zeroRowFound = false;
+            for (let r = 0; r < R; r++) {
+                const isZeroRow = matrix[r].every(v => Math.abs(v) < 1e-9);
+                if (isZeroRow) {
+                    zeroRowFound = true;
+                } else if (zeroRowFound) {
+                    ruleStatus[0].status = false;
+                    ruleStatus[0].msg = `Falla: La fila ${r + 1} no es nula pero se encuentra debajo de una fila de ceros.`;
+                    break;
+                }
+            }
+
+            // Find pivot positions
+            const pivots = []; // Array of {row, col, value}
+            for (let r = 0; r < R; r++) {
+                const firstNonZeroCol = matrix[r].findIndex(v => Math.abs(v) > 1e-9);
+                if (firstNonZeroCol !== -1) {
+                    pivots.push({ row: r, col: firstNonZeroCol, val: matrix[r][firstNonZeroCol] });
+                }
+            }
+
+            // 2. Check Pivot Staircase (Strictly to the right)
+            for (let i = 1; i < pivots.length; i++) {
+                if (pivots[i].col <= pivots[i - 1].col) {
+                    ruleStatus[1].status = false;
+                    ruleStatus[1].msg = `Falla: El pivote de la fila ${pivots[i].row + 1} (columna ${pivots[i].col + 1}) no está más a la derecha que el pivote anterior.`;
+                    break;
+                }
+            }
+
+            // 3. Check Pivots equal 1
+            for (let p of pivots) {
+                if (Math.abs(p.val - 1) > 1e-9) {
+                    ruleStatus[2].status = false;
+                    ruleStatus[2].msg = `Falla: El pivote en fila ${p.row + 1}, columna ${p.col + 1} vale ${p.val} en lugar de 1.`;
+                    break;
+                }
+            }
+
+            // 4. Check Zeros Above/Below Pivots
+            for (let p of pivots) {
+                for (let r = 0; r < R; r++) {
+                    if (r !== p.row) {
+                        if (Math.abs(matrix[r][p.col]) > 1e-9) {
+                            ruleStatus[3].status = false;
+                            ruleStatus[3].msg = `Falla: La columna ${p.col + 1} tiene un elemento no nulo (${matrix[r][p.col]}) en la fila ${r + 1}.`;
+                            break;
+                        }
+                    }
+                }
+                if (!ruleStatus[3].status) break;
+            }
+
+            // Categorize Result
+            const isRef = ruleStatus[0].status && ruleStatus[1].status && ruleStatus[2].status;
+            const isRref = isRef && ruleStatus[3].status;
+
+            // Render Status Badge
+            const badge = document.getElementById('rref-status-badge');
+            if (isRref) {
+                badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+                badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Matriz en RREF';
+            } else if (isRef) {
+                badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40';
+                badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> En REF (No RREF)';
+            } else {
+                badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40';
+                badge.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> No es Escalonada';
+            }
+
+            // Render Rules List
+            const rulesListContainer = document.getElementById('rref-rules-list');
+            rulesListContainer.innerHTML = '';
+
+            ruleStatus.forEach(rule => {
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-xl border flex items-start gap-3 transition-colors ${
+                    rule.status ? 'bg-slate-900/60 border-slate-700/60 text-slate-200' : 'bg-rose-950/20 border-rose-500/30 text-rose-200'
+                }`;
+
+                const icon = rule.status
+                    ? '<i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>'
+                    : '<i class="fa-solid fa-xmark text-rose-400 mt-0.5"></i>';
+
+                item.innerHTML = `
+                    ${icon}
+                    <div class="text-xs">
+                        <div class="font-bold text-sm ${rule.status ? 'text-slate-200' : 'text-rose-300'}">${rule.title}</div>
+                        <div class="text-slate-400 mt-0.5">${rule.msg}</div>
+                    </div>
+                `;
+                rulesListContainer.appendChild(item);
+            });
+
+            renderMath();
+        }
+
+        /* ================= SECTION 3: QUIZ ENGINE ================= */
+        function initQuiz() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            updateScoreboard();
+            showQuestion();
+        }
+
+        function resetQuiz() {
+            initQuiz();
+        }
+
+        function updateScoreboard() {
+            document.getElementById('quiz-score').innerText = `${quizScore} / ${QUIZ_QUESTIONS.length}`;
+            document.getElementById('streak-count').innerText = currentStreak;
+        }
+
+        function showQuestion() {
+            const q = QUIZ_QUESTIONS[currentQuizIndex];
+            selectedOption = null;
+
+            // UI Elements
+            document.getElementById('question-category').innerText = q.category;
+            document.getElementById('question-number').innerText = `Pregunta ${currentQuizIndex + 1} de ${QUIZ_QUESTIONS.length}`;
+            document.getElementById('question-text').innerHTML = q.question;
+
+            // Options
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full p-4 rounded-xl border border-slate-700 bg-slate-900/70 hover:bg-slate-700/60 text-left font-medium text-slate-200 text-sm sm:text-base transition-all flex items-center justify-between group';
+                btn.onclick = () => handleSelectOption(idx);
+                btn.id = `opt-btn-${idx}`;
+                btn.innerHTML = `
+                    <span>$${optText}$</span>
+                    <i class="fa-regular fa-circle text-slate-500 group-hover:text-cyan-400 transition-colors"></i>
+                `;
+                container.appendChild(btn);
+            });
+
+            // Feedback & Next Button Reset
+            document.getElementById('quiz-feedback').className = 'hidden';
+            document.getElementById('next-question-btn').classList.add('hidden');
+
+            renderMath();
+        }
+
+        function handleSelectOption(selectedIndex) {
+            if (selectedOption !== null) return; // Prevent double answering
+            selectedOption = selectedIndex;
+
+            const q = QUIZ_QUESTIONS[currentQuizIndex];
+            const isCorrect = selectedIndex === q.correctIndex;
+
+            // Update streak & score
+            if (isCorrect) {
+                quizScore++;
+                currentStreak++;
+            } else {
+                currentStreak = 0;
+            }
+            updateScoreboard();
+
+            // Highlight Options
+            q.options.forEach((_, idx) => {
+                const btn = document.getElementById(`opt-btn-${idx}`);
+                btn.disabled = true;
+
+                if (idx === q.correctIndex) {
+                    btn.className = 'w-full p-4 rounded-xl border-2 border-emerald-500 bg-emerald-950/30 text-emerald-200 font-medium text-sm sm:text-base flex items-center justify-between';
+                    btn.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-400';
+                } else if (idx === selectedIndex && !isCorrect) {
+                    btn.className = 'w-full p-4 rounded-xl border-2 border-rose-500 bg-rose-950/30 text-rose-200 font-medium text-sm sm:text-base flex items-center justify-between';
+                    btn.querySelector('i').className = 'fa-solid fa-circle-xmark text-rose-400';
+                } else {
+                    btn.className = 'w-full p-4 rounded-xl border border-slate-800 bg-slate-900/30 text-slate-500 opacity-50 flex items-center justify-between';
+                }
+            });
+
+            // Show Feedback Block
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackExp = document.getElementById('feedback-explanation');
+
+            feedbackEl.classList.remove('hidden');
+            if (isCorrect) {
+                feedbackEl.className = 'p-5 rounded-xl border border-emerald-500/40 bg-emerald-950/20 text-emerald-200 space-y-2';
+                feedbackTitle.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> ¡Correcto!';
+            } else {
+                feedbackEl.className = 'p-5 rounded-xl border border-rose-500/40 bg-rose-950/20 text-rose-200 space-y-2';
+                feedbackTitle.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-400"></i> Incorrecto';
+            }
+
+            feedbackExp.innerHTML = q.explanation;
+
+            // Reveal Next Button
+            const nextBtn = document.getElementById('next-question-btn');
+            nextBtn.classList.remove('hidden');
+            nextBtn.classList.add('inline-flex');
+
+            renderMath();
+        }
+
+        function nextQuestion() {
+            if (currentQuizIndex < QUIZ_QUESTIONS.length - 1) {
+                currentQuizIndex++;
+                showQuestion();
+            } else {
+                // End of quiz state
+                const card = document.getElementById('quiz-card');
+                card.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="inline-flex p-4 bg-cyan-500/10 text-cyan-400 rounded-full text-4xl mb-2">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-100">¡Cuestionario Completado!</h3>
+                        <p class="text-slate-300">Puntuación final: <strong class="text-cyan-400">${quizScore} / ${QUIZ_QUESTIONS.length}</strong></p>
+                        <button onclick="location.reload()" class="px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg transition-all inline-flex items-center gap-2 mt-4">
+                            <i class="fa-solid fa-rotate-right"></i> Intentar de nuevo
+                        </button>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
